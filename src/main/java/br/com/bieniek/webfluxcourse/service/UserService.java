@@ -9,4 +9,6 @@ public interface UserService {
     Mono<User> save(final UserRequest request);
     Mono<User> findById(final String id);
     Flux<User> findAll();
+    Mono<User> update(final String id, final UserRequest request);
+
 }

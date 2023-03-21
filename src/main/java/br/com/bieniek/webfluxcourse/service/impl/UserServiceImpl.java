@@ -35,4 +35,11 @@ public class UserServiceImpl implements UserService {
     public Flux<User> findAll() {
         return userRepository.findAll();
     }
+
+    @Override
+    public Mono<User> update(String id, UserRequest request) {
+        return findById(id)
+                .map(entity -> mapper.toEntity(request, entity))
+                .flatMap(userRepository::save);
+    }
 }
