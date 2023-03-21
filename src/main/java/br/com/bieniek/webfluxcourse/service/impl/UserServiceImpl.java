@@ -5,6 +5,7 @@ import br.com.bieniek.webfluxcourse.mapper.UserMapper;
 import br.com.bieniek.webfluxcourse.model.request.UserRequest;
 import br.com.bieniek.webfluxcourse.repository.UserRepository;
 import br.com.bieniek.webfluxcourse.service.UserService;
+import br.com.bieniek.webfluxcourse.service.exception.ObjectNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -23,6 +24,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Mono<User> findById(String id) {
-        return userRepository.findById(id);
+        return userRepository.findById(id)
+                .switchIfEmpty(Mono.error(
+                        new ObjectNotFoundException(id, User.class))
+                );
     }
 }
