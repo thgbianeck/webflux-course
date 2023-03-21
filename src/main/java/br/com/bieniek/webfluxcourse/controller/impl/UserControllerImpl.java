@@ -1,6 +1,7 @@
 package br.com.bieniek.webfluxcourse.controller.impl;
 
 import br.com.bieniek.webfluxcourse.controller.UserController;
+import br.com.bieniek.webfluxcourse.mapper.UserMapper;
 import br.com.bieniek.webfluxcourse.model.request.UserRequest;
 import br.com.bieniek.webfluxcourse.model.response.UserResponse;
 import br.com.bieniek.webfluxcourse.service.UserService;
@@ -20,6 +21,7 @@ import static org.springframework.http.HttpStatus.*;
 public class UserControllerImpl implements UserController {
 
     private final UserService userService;
+    private final UserMapper mapper;
 
     @Override
     public ResponseEntity<Mono<Void>> save(UserRequest request) {
@@ -29,7 +31,9 @@ public class UserControllerImpl implements UserController {
 
     @Override
     public ResponseEntity<Mono<UserResponse>> findById(String id) {
-        return null;
+        return ResponseEntity.ok().body(
+                userService.findById(id).map(mapper::toResponse)
+        );
     }
 
     @Override

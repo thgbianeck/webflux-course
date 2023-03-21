@@ -17,4 +17,9 @@ public class UserRepositoryImpl implements UserRepository {
     public Mono<User> save(User user) {
         return mongoTemplate.save(user);
     }
+
+    @Override
+    public Mono<User> findById(String id) {
+        return mongoTemplate.findById(id, User.class);
+    }
 }
