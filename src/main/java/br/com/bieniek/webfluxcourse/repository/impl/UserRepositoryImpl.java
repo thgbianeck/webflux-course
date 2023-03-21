@@ -5,6 +5,7 @@ import br.com.bieniek.webfluxcourse.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
@@ -21,5 +22,10 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Mono<User> findById(String id) {
         return mongoTemplate.findById(id, User.class);
+    }
+
+    @Override
+    public Flux<User> findAll() {
+        return mongoTemplate.findAll(User.class);
     }
 }
