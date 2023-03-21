@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import reactor.core.publisher.Mono;
 
 import static java.time.LocalDateTime.now;
@@ -26,6 +27,18 @@ public class ControllerExceptionHandler {
                                 .build()
                         )
                 );
+    }
+
+    @ExceptionHandler(WebExchangeBindException.class)
+    public ResponseEntity<Mono<ValidationError>> validationError(WebExchangeBindException ex, ServerHttpRequest request) {
+
+        ValidationError error = new ValidationError(now(), request.getPath().toString(), BAD_REQUEST.value(),
+                "Validation error", "Error on validations attributes");
+
+        ex.getBindingResult().getFieldErrors().forEach(x ->error.addError(x.getField(), x.getDefaultMessage()));
+
+        return ResponseEntity.badRequest().body(Mono.just(error));
+
     }
 
     private String verifyDupKey(String message) {
