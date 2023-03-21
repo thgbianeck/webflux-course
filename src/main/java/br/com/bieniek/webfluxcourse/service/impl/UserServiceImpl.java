@@ -25,10 +25,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Mono<User> findById(String id) {
-        return userRepository.findById(id)
-                .switchIfEmpty(Mono.error(
-                        new ObjectNotFoundException(id, User.class))
-                );
+        return handleNotFound(userRepository.findById(id), id, User.class);
     }
 
     @Override
@@ -41,5 +38,16 @@ public class UserServiceImpl implements UserService {
         return findById(id)
                 .map(entity -> mapper.toEntity(request, entity))
                 .flatMap(userRepository::save);
+    }
+
+    @Override
+    public Mono<User> delete(String id) {
+        return handleNotFound(userRepository.findAndRemove(id), id, User.class);
+    }
+
+    private <T> Mono<T> handleNotFound(Mono<T> mono, String id, Class<T> clazz) {
+        return mono.switchIfEmpty(Mono.error(
+                new ObjectNotFoundException(id, clazz))
+        );
     }
 }

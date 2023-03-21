@@ -8,7 +8,8 @@ public class ObjectNotFoundException extends RuntimeException{
         super(message);
     }
 
-    public ObjectNotFoundException(String id, Class<User> clazz) {
+    public <T> ObjectNotFoundException(String id, Class<T> clazz) {
         super(String.format("Object not found: Id: %s, Type: %s", id, clazz.getSimpleName()));
     }
+
 }
