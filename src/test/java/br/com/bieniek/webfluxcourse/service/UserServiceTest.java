@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,10 +17,9 @@ import reactor.test.StepVerifier;
 
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -51,7 +49,7 @@ class UserServiceTest {
                 .expectComplete() // Expect the stream to complete
                 .verify(); // Verify the stream
 
-        Mockito.verify(userRepository, Mockito.times(1)).save(any(User.class));
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
@@ -70,7 +68,7 @@ class UserServiceTest {
                 .expectComplete()
                 .verify();
 
-        Mockito.verify(userRepository, Mockito.times(1)).findById(anyString());
+        verify(userRepository, times(1)).findById(anyString());
 
     }
 
@@ -89,7 +87,7 @@ class UserServiceTest {
                 .expectComplete()
                 .verify();
 
-        Mockito.verify(userRepository, Mockito.times(1)).findAll();
+        verify(userRepository, times(1)).findAll();
 
     }
 
@@ -105,11 +103,29 @@ class UserServiceTest {
 
         Mono<User> result = userService.update("123", request);
 
-        StepVerifier.create(result) // Create a StepVerifier
-                .expectNextMatches(user -> user.getClass().equals(User.class)) // Expect a User class
-                .expectComplete() // Expect the stream to complete
-                .verify(); // Verify the stream
+        StepVerifier.create(result)
+                .expectNextMatches(user -> user.getClass().equals(User.class))
+                .expectComplete()
+                .verify();
 
-        Mockito.verify(userRepository, Mockito.times(1)).save(any(User.class));
+        verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should delete a user")
+    void shouldDeleteAUser() {
+        final String id = "1";
+
+        User entity = User.builder().id(id).build();
+        when(userRepository.findAndRemove(anyString())).thenReturn(Mono.just(entity));
+
+        Mono<User> result = userService.delete(id);
+
+        StepVerifier.create(result)
+                .expectNextMatches(user -> user.getClass().equals(User.class))
+                .expectComplete()
+                .verify();
+
+        verify(userRepository, times(1)).findAndRemove(anyString());
     }
 }
