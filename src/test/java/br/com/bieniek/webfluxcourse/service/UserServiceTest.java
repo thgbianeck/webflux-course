@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -19,6 +20,7 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,19 +41,75 @@ class UserServiceTest {
         UserRequest request = new UserRequest("Thiago", "thiagobianeck@gmail.com", "123456");
         User entity =  User.builder().build();
 
-        // Return a User entity when the mapper is called
         when(mapper.toEntity(any(UserRequest.class))).thenReturn(entity);
-        // Return a Mono<User> with a non-null value when the repository is called
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(User.builder().build()));
 
         Mono<User> result = userService.save(request);
 
         StepVerifier.create(result) // Create a StepVerifier
-                .expectNextMatches(Objects::nonNull) // Expect a non-null value
+                .expectNextMatches(user -> user.getClass().equals(User.class)) // Expect a User class
                 .expectComplete() // Expect the stream to complete
                 .verify(); // Verify the stream
 
-        // Verify that the userRepository.save() method was called once
+        Mockito.verify(userRepository, Mockito.times(1)).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should find a user by id")
+    void shouldFindById() {
+        final String id = "1";
+
+        when(userRepository.findById(anyString())).thenReturn(Mono.just(User.builder().id(id).build()));
+
+        Mono<User> result = userService.findById(id);
+
+        StepVerifier.create(result)
+                .expectNextMatches(user -> Objects.nonNull(user)
+                        && user.getClass().equals(User.class)
+                        && user.getId().equals(id))
+                .expectComplete()
+                .verify();
+
+        Mockito.verify(userRepository, Mockito.times(1)).findById(anyString());
+
+    }
+
+    @Test
+    @DisplayName("Should find all users")
+    void shouldFindAll() {
+        final String id = "1";
+
+        when(userRepository.findAll()).thenReturn(Flux.just(User.builder().id(id).build()));
+
+        Flux<User> result = userService.findAll();
+
+        StepVerifier.create(result)
+                .expectNextMatches(user -> Objects.nonNull(user)
+                        && user.getClass().equals(User.class))
+                .expectComplete()
+                .verify();
+
+        Mockito.verify(userRepository, Mockito.times(1)).findAll();
+
+    }
+
+    @Test
+    @DisplayName("Should update a user")
+    void shouldUpdateAUser() {
+        UserRequest request = new UserRequest("Thiago", "thiagobianeck@gmail.com", "123456");
+        User entity =  User.builder().build();
+
+        when(mapper.toEntity(any(UserRequest.class), any(User.class))).thenReturn(entity);
+        when(userRepository.findById(anyString())).thenReturn(Mono.just(entity));
+        when(userRepository.save(any(User.class))).thenReturn(Mono.just(entity));
+
+        Mono<User> result = userService.update("123", request);
+
+        StepVerifier.create(result) // Create a StepVerifier
+                .expectNextMatches(user -> user.getClass().equals(User.class)) // Expect a User class
+                .expectComplete() // Expect the stream to complete
+                .verify(); // Verify the stream
+
         Mockito.verify(userRepository, Mockito.times(1)).save(any(User.class));
     }
 }
