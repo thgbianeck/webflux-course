@@ -4,6 +4,7 @@ import br.com.bieniek.webfluxcourse.entity.User;
 import br.com.bieniek.webfluxcourse.mapper.UserMapper;
 import br.com.bieniek.webfluxcourse.model.request.UserRequest;
 import br.com.bieniek.webfluxcourse.repository.UserRepository;
+import br.com.bieniek.webfluxcourse.service.exception.ObjectNotFoundException;
 import br.com.bieniek.webfluxcourse.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import reactor.test.StepVerifier;
 
 import java.util.Objects;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -127,5 +129,18 @@ class UserServiceTest {
                 .verify();
 
         verify(userRepository, times(1)).findAndRemove(anyString());
+    }
+
+    @Test
+    @DisplayName("Should handle not found")
+    void testHandleNotFound() {
+        when(userRepository.findById(anyString())).thenReturn(Mono.empty());
+
+        try{
+            userService.findById("123").block();
+        } catch (Exception e) {
+            assertEquals(ObjectNotFoundException.class, e.getClass());
+            assertEquals("Object not found: Id: 123, Type: User", e.getMessage());
+        }
     }
 }
