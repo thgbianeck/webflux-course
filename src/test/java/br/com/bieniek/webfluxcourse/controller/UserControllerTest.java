@@ -15,7 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import reactor.core.publisher.Mono;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -23,13 +22,17 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.web.reactive.function.BodyInserters.fromValue;
-import static reactor.core.publisher.Mono.*;
+import static reactor.core.publisher.Mono.just;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @AutoConfigureWebTestClient
 class UserControllerTest {
 
+    public static final String ID = "123456";
+    public static final String NAME = "Thiago";
+    public static final String EMAIL = "thiagobianeck@gmail.com";
+    public static final String PASSWORD = "123456";
     @Autowired
     private WebTestClient webTestClient;
 
@@ -46,9 +49,9 @@ class UserControllerTest {
     @DisplayName("Test endpoint save with success")
     void testSaveWithSuccess() {
         final var request = UserRequest.builder()
-                .name("Thiago")
-                .email("thiagobianeck@gmail.com")
-                .password("123456")
+                .name(NAME)
+                .email(EMAIL)
+                .password(PASSWORD)
                 .build();
 
         when(userService.save(any(UserRequest.class)))
@@ -68,9 +71,9 @@ class UserControllerTest {
     @DisplayName("Test endpoint save with bad request")
     void testSaveWithBadRequest() {
         final var request = UserRequest.builder()
-                .name(" Thiago")
-                .email("thiagobianeck@gmail.com")
-                .password("123456")
+                .name(" " + NAME)
+                .email(EMAIL)
+                .password(PASSWORD)
                 .build();
 
         webTestClient.post()
@@ -99,29 +102,23 @@ class UserControllerTest {
     @DisplayName("Test endpoint findById with success")
     void testFIndByIdWithSucess() {
 
-        final var id = "123456";
-
         final var userResponse = UserResponse.builder()
-                .id(id)
-                .name("Thiago")
-                .email("thiagobianeck@gmail.com")
-                .password("123456")
-                .build();
+                .id(ID).name(NAME).email(EMAIL).password(PASSWORD).build();
 
         when(userService.findById(any(String.class)))
                 .thenReturn(just(User.builder().build()));
         when(mapper.toResponse(any(User.class)))
                 .thenReturn(userResponse);
 
-        webTestClient.get().uri("/users/{id}", id)
+        webTestClient.get().uri("/users/{id}", ID)
                 .accept(APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.id").isEqualTo(id)
-                .jsonPath("$.name").isEqualTo(userResponse.name())
-                .jsonPath("$.email").isEqualTo(userResponse.email())
-                .jsonPath("$.password").isEqualTo(userResponse.password());
+                .jsonPath("$.id").isEqualTo(ID)
+                .jsonPath("$.name").isEqualTo(NAME)
+                .jsonPath("$.email").isEqualTo(EMAIL)
+                .jsonPath("$.password").isEqualTo(PASSWORD);
 
     }
 
