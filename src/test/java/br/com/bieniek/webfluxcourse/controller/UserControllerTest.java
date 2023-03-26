@@ -34,6 +34,8 @@ class UserControllerTest {
     public static final String NAME = "Thiago";
     public static final String EMAIL = "thiagobianeck@gmail.com";
     public static final String PASSWORD = "123456";
+    public static final String USERS = "/users";
+    public static final String USERS_ID = "/users/{id}";
     @Autowired
     private WebTestClient webTestClient;
 
@@ -59,7 +61,7 @@ class UserControllerTest {
                 .thenReturn(just(User.builder().build()));
 
         webTestClient.post()
-                .uri("/users")
+                .uri(USERS)
                 .contentType(APPLICATION_JSON)
                 .body(fromValue(request))
                 .exchange()
@@ -78,14 +80,14 @@ class UserControllerTest {
                 .build();
 
         webTestClient.post()
-                .uri("/users")
+                .uri(USERS)
                 .contentType(APPLICATION_JSON)
                 .body(fromValue(request))
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.path")
-                    .isEqualTo("/users")
+                    .isEqualTo(USERS)
                 .jsonPath("$.status")
                     .isEqualTo(BAD_REQUEST.value())
                 .jsonPath("$.error")
@@ -111,7 +113,7 @@ class UserControllerTest {
         when(mapper.toResponse(any(User.class)))
                 .thenReturn(userResponse);
 
-        webTestClient.get().uri("/users/{id}", ID)
+        webTestClient.get().uri(USERS_ID, ID)
                 .accept(APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk()
@@ -134,7 +136,7 @@ class UserControllerTest {
         when(mapper.toResponse(any(User.class)))
                 .thenReturn(userResponse);
 
-        webTestClient.get().uri("/users")
+        webTestClient.get().uri(USERS)
                 .accept(APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk()
@@ -151,7 +153,7 @@ class UserControllerTest {
         when(userService.delete(any(String.class)))
                 .thenReturn(just(User.builder().build()));
 
-        webTestClient.delete().uri("/users/{id}", ID)
+        webTestClient.delete().uri(USERS_ID, ID)
                 .accept(APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk();
@@ -177,7 +179,7 @@ class UserControllerTest {
         when(userService.update(any(String.class), any(UserRequest.class)))
                 .thenReturn(just(User.builder().build()));
 
-        webTestClient.patch().uri("/users/{id}", ID)
+        webTestClient.patch().uri(USERS_ID, ID)
                 .contentType(APPLICATION_JSON)
                 .body(fromValue(request))
                 .exchange()
