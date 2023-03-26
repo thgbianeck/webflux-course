@@ -145,4 +145,52 @@ class UserControllerTest {
                 .jsonPath("$[0].password").isEqualTo(PASSWORD);
     }
 
+    @Test
+    @DisplayName("Test endpoint delete with success")
+    void testDeleteWithSuccess() {
+        when(userService.delete(any(String.class)))
+                .thenReturn(just(User.builder().build()));
+
+        webTestClient.delete().uri("/users/{id}", ID)
+                .accept(APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk();
+
+        verify(userService).delete(any(String.class));
+    }
+
+    @Test
+    @DisplayName("Test endpoint update with success")
+    void testUpdateWithSuccess() {
+        final var request = UserRequest.builder()
+                .name(NAME)
+                .email(EMAIL)
+                .password(PASSWORD)
+                .build();
+
+        final var response = UserResponse.builder()
+                .id(ID).name(NAME).email(EMAIL).password(PASSWORD).build();
+
+        when(mapper.toResponse(any(User.class)))
+                .thenReturn(response);
+
+        when(userService.update(any(String.class), any(UserRequest.class)))
+                .thenReturn(just(User.builder().build()));
+
+        webTestClient.patch().uri("/users/{id}", ID)
+                .contentType(APPLICATION_JSON)
+                .body(fromValue(request))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(ID)
+                .jsonPath("$.name").isEqualTo(NAME)
+                .jsonPath("$.email").isEqualTo(EMAIL)
+                .jsonPath("$.password").isEqualTo(PASSWORD);
+
+
+        verify(userService).update(any(String.class), any(UserRequest.class));
+        verify(mapper).toResponse(any(User.class));
+    }
+
 }
